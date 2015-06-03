@@ -1,14 +1,288 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>org.kilois.experiments</groupId>
   <artifactId>jaspic-experiment</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+
   <name>JASPIC Experiment</name>
+  <description>A micro development for a fully functional JASPIC module</description>
+  <url>https://github.com/dsmania/jaspic-experiment</url>
+  <inceptionYear>2012</inceptionYear>
+
+  <organization>
+    <name>Kilois</name>
+    <url>http://www.kilois.org</url>
+  </organization>
+
+  <licenses>
+    <license>
+      <name>BSD 3-clause</name>
+      <url>${project.basedir}/LICENSE</url>
+      <distribution>manual</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>ymenvid</id>
+      <name>Yago Méndez Vidal</name>
+      <email>dsmania@kilois.org</email>
+      <organization>Kilois</organization>
+      <organizationUrl>http://www.kilois.org</organizationUrl>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>
+
   <modules>
     <module>jaspic-experiment-security</module>
     <module>jaspic-experiment-service</module>
     <module>jaspic-experiment-enterprise</module>
     <module>jaspic-experiment-web</module>
   </modules>
+
+  <scm>
+    <connection>scm:git:git@github.com:dsmania/jaspic-experiment.git</connection>
+    <developerConnection>scm:git:git@github.com:dsmania/jaspic-experiment.git</developerConnection>
+    <url>https://github.com/dsmania/jaspic-experiment</url>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/dsmania/jaspic-experiment/issues</url>
+  </issueManagement>
+
+  <ciManagement />
+
+  <distributionManagement />
+
+  <properties>
+    <project.code>jaspic-experiment</project.code>
+    <project.title>JASPIC Experiment</project.title>
+    <project.rootdir>${project.basedir}</project.rootdir>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <serviceModuleId>${project.code}-service</serviceModuleId>
+    <serviceClientModuleId>${serviceModuleId}-client</serviceClientModuleId>
+    <securityModuleId>${project.code}-security</securityModuleId>
+    <webModuleId>${project.code}-web</webModuleId>
+    <enterpriseModuleId>${project.code}-enterprise</enterpriseModuleId>
+
+    <ejb.version>3.1</ejb.version>
+    <el.version>2.2</el.version>
+    <jaspic.version>1.0</jaspic.version>
+    <java.version>1.7</java.version>
+    <javaee.version>6</javaee.version>
+    <javaee-api.version>6.0</javaee-api.version>
+    <javase.version>7</javase.version>
+    <jsf.version>2.0</jsf.version>
+    <junit.version>4.12</junit.version>
+    <lombok.version>1.16.4</lombok.version>
+
+    <maven-clean-plugin.version>2.6.1</maven-clean-plugin.version>
+    <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+    <maven-ear-plugin.version>2.10</maven-ear-plugin.version>
+    <maven-ejb-plugin.version>2.5</maven-ejb-plugin.version>
+    <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
+    <maven-jarsigner-plugin.version>1.4</maven-jarsigner-plugin.version>
+    <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+    <maven-resources-plugin.version>2.7</maven-resources-plugin.version>
+    <maven-source-plugin.version>2.4</maven-source-plugin.version>
+    <maven-war-plugin.version>2.6</maven-war-plugin.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>javax</groupId>
+        <artifactId>javaee-api</artifactId>
+        <version>${javaee-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${serviceModuleId}</artifactId>
+        <version>${project.version}</version>
+        <type>ejb</type>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${serviceModuleId}</artifactId>
+        <version>${project.version}</version>
+        <type>ejb-client</type>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${securityModuleId}</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${webModuleId}</artifactId>
+        <version>${project.version}</version>
+        <type>war</type>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${enterpriseModuleId}</artifactId>
+        <version>${project.version}</version>
+        <type>ear</type>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <repositories />
+
+  <pluginRepositories />
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven-resources-plugin.version}</version>
+          <executions>
+            <execution>
+              <phase>initialize</phase>
+              <goals>
+                <goal>resources</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven-jar-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jarsigner-plugin</artifactId>
+          <version>${maven-jarsigner-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${maven-source-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-ejb-plugin</artifactId>
+          <version>${maven-ejb-plugin.version}</version>
+          <configuration>
+            <ejbVersion>${ejb.version}</ejbVersion>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>${maven-war-plugin.version}</version>
+          <configuration>
+            <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-ear-plugin</artifactId>
+          <version>${maven-ear-plugin.version}</version>
+          <configuration>
+            <version>${javaee.version}</version>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${maven-clean-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <classpathDependencyExcludes>
+            <classpathDependencyExcludes>javax:javaee-api</classpathDependencyExcludes>
+          </classpathDependencyExcludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting />
+
+  <profiles>
+
+    <profile>
+      <id>glassfish</id>
+      <activation>
+        <property>
+          <name>gf</name>
+        </property>
+      </activation>
+
+      <properties>
+        <glassfish.version>${glassfish.version}</glassfish.version>
+
+        <maven-embedded-glassfish-plugin.version>3.1.2.2</maven-embedded-glassfish-plugin.version>
+      </properties>
+
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.glassfish.embedded</groupId>
+              <artifactId>maven-embedded-glassfish-plugin</artifactId>
+              <version>${maven-embedded-glassfish-plugin.version}</version>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+
+  </profiles>
+
 </project>

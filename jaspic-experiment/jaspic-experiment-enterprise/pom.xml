@@ -1,10 +1,150 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.kilois.experiments</groupId>
     <artifactId>jaspic-experiment</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>jaspic-experiment-enterprise</artifactId>
+
   <name>JASPIC Experiment: Enterprise module</name>
+
+  <properties>
+    <project.rootdir>${project.basedir}/..</project.rootdir>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.parent.groupId}</groupId>
+      <artifactId>${serviceModuleId}</artifactId>
+      <type>ejb</type>
+    </dependency>
+    <dependency>
+      <groupId>${project.parent.groupId}</groupId>
+      <artifactId>${securityModuleId}</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.parent.groupId}</groupId>
+      <artifactId>${webModuleId}</artifactId>
+      <type>war</type>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <excludes>
+          <exclude>**/glassfish*.xml</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-ear-plugin</artifactId>
+        <configuration>
+          <applicationName>${project.code}</applicationName>
+          <displayName>${project.title}</displayName>
+          <applicationId>${project.artifactId}</applicationId>
+          <filtering>true</filtering>
+          <defaultLibBundleDir>META-INF/lib</defaultLibBundleDir>
+          <applicationXml>${project.build.outputDirectory}/META-INF/application.xml</applicationXml>
+          <generateApplicationXml>false</generateApplicationXml>
+          <skinnyWars>true</skinnyWars>
+          <modules>
+            <jarModule>
+              <moduleId>${securityModuleId}</moduleId>
+              <groupId>${project.parent.groupId}</groupId>
+              <artifactId>${securityModuleId}</artifactId>
+            </jarModule>
+            <ejbModule>
+              <moduleId>${serviceModuleId}</moduleId>
+              <groupId>${project.parent.groupId}</groupId>
+              <artifactId>${serviceModuleId}</artifactId>
+            </ejbModule>
+            <webModule>
+              <moduleId>${webModuleId}</moduleId>
+              <groupId>${project.parent.groupId}</groupId>
+              <artifactId>${webModuleId}</artifactId>
+              <contextRoot>${project.code}</contextRoot>
+            </webModule>
+          </modules>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+
+    <profile>
+      <id>glassfish</id>
+      <activation>
+        <property>
+          <name>gf</name>
+        </property>
+      </activation>
+
+      <build>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
+
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-ear-plugin</artifactId>
+            <configuration>
+              <earSourceDirectory>${project.build.outputDirectory}</earSourceDirectory>
+              <earSourceIncludes>**/glassfish*.xml</earSourceIncludes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.glassfish.maven.plugin</groupId>
+            <artifactId>maven-glassfish-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
+
 </project>
