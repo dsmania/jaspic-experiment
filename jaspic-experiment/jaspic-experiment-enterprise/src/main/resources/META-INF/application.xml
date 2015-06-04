@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application id="${project.artifactId}" version="${javaee.version}" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd">
+
+  <application-name>${project.code}</application-name>
+  <description>${project.parent.description}</description>
+  <display-name>${project.title}</display-name>
+
+  <module id="${serviceModuleId}">
+    <ejb>${serviceModuleId}-${project.parent.version}.jar</ejb>
+  </module>
+  <module id="${webModuleId}">
+    <web>
+      <web-uri>${webModuleId}-${project.parent.version}.war</web-uri>
+      <context-root>${project.code}</context-root>
+    </web>
+  </module>
+
+  <security-role id="user">
+    <description>User</description>
+    <role-name>user</role-name>
+  </security-role>
+  <security-role id="admin">
+    <description>Administrator</description>
+    <role-name>admin</role-name>
+  </security-role>
+
+  <library-directory>META-INF/lib</library-directory>
+
+</application>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config version="2.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd">
+
+  <application>
+    <locale-config>
+      <default-locale>en</default-locale>
+      <supported-locale>es</supported-locale>
+    </locale-config>
+    <resource-bundle>
+      <base-name>org.kilois.experiments.jaspicexperiment.web.resources.messages</base-name>
+      <var>messages</var>
+    </resource-bundle>
+  </application>
+
+  <navigation-rule>
+    <navigation-case>
+      <from-outcome>index</from-outcome>
+      <to-view-id>/index.xhtml</to-view-id>
+      <redirect />
+    </navigation-case>
+    <navigation-case>
+      <from-outcome>user</from-outcome>
+      <to-view-id>/user.xhtml</to-view-id>
+      <redirect />
+    </navigation-case>
+    <navigation-case>
+      <from-outcome>admin</from-outcome>
+      <to-view-id>/admin.xhtml</to-view-id>
+      <redirect />
+    </navigation-case>
+    <navigation-case>
+      <from-outcome>*</from-outcome>
+      <to-view-id>/error.xhtml</to-view-id>
+      <redirect />
+    </navigation-case>
+  </navigation-rule>
+
+</faces-config>
