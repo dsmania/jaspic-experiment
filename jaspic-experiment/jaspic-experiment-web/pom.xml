@@ -8,6 +8,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>jaspic-experiment-web</artifactId>
+  <packaging>war</packaging>
 
   <name>JASPIC Experiment: Web module</name>
 
