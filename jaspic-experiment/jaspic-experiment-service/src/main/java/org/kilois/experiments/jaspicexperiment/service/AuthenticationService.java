@@ -4,6 +4,8 @@ public interface AuthenticationService {
 
     public AuthenticationResult authenticate(String userName, char[] password);
 
+    public AuthenticationResult authenticate(String token);
+
 
     @javax.ejb.Remote
     public static interface Remote extends AuthenticationService {

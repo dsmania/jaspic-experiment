@@ -27,8 +27,10 @@ public class AuthenticationResult {
     private Set<String> groups;
 
     public Set<String> getGroups() {
-    	return (this.groups != null) ? Collections.unmodifiableSet(this.groups) : null;
+        return (this.groups != null) ? Collections.unmodifiableSet(this.groups) : null;
     }
+
+    private String token;
 
     private String error;
 
@@ -36,32 +38,36 @@ public class AuthenticationResult {
         return this.state.isAuthorized();
     }
 
-    public static AuthenticationResult ofLogged(String userName, Set<String> groups) {
-        return new AuthenticationResult(State.LOGGED, userName, groups, null);
+    public static AuthenticationResult ofLogged(String userName, Set<String> groups, String token) {
+        return new AuthenticationResult(State.LOGGED, userName, groups, token, null);
     }
 
     public static AuthenticationResult ofWrongInfo(String userName) {
-        return new AuthenticationResult(State.WRONG_INFO, userName, null, State.WRONG_INFO.toString());
+        return new AuthenticationResult(State.WRONG_INFO, userName, null, null, State.WRONG_INFO.toString());
     }
 
     public static AuthenticationResult ofNotAuthorized(String userName, Set<String> groups) {
-        return new AuthenticationResult(State.NOT_AUTHORIZED, userName, groups, State.NOT_AUTHORIZED.toString());
+        return new AuthenticationResult(State.NOT_AUTHORIZED, userName, groups, null, State.NOT_AUTHORIZED.toString());
     }
 
     public static AuthenticationResult ofNotAuthorized(String userName) {
-        return new AuthenticationResult(State.NOT_AUTHORIZED, userName, null, State.NOT_AUTHORIZED.toString());
+        return new AuthenticationResult(State.NOT_AUTHORIZED, userName, null, null, State.NOT_AUTHORIZED.toString());
+    }
+
+    public static AuthenticationResult ofExpired() {
+        return new AuthenticationResult(State.EXPIRED, null, null, null, State.EXPIRED.toString());
     }
 
     public static AuthenticationResult ofError(String error, String userName) {
-        return new AuthenticationResult(State.ERROR, userName, null, error);
+        return new AuthenticationResult(State.ERROR, userName, null, null, error);
     }
 
     public static AuthenticationResult ofError(String error) {
-        return new AuthenticationResult(State.ERROR, null, null, error);
+        return new AuthenticationResult(State.ERROR, null, null, null, error);
     }
 
     public static AuthenticationResult ofError() {
-        return new AuthenticationResult(State.ERROR, null, null, State.ERROR.toString());
+        return new AuthenticationResult(State.ERROR, null, null, null, State.ERROR.toString());
     }
 
 
@@ -72,6 +78,7 @@ public class AuthenticationResult {
         LOGGED(true, "User successfully logged"),
         WRONG_INFO(false, "Wrong user or password"),
         NOT_AUTHORIZED(false, "User not authorized"),
+        EXPIRED(false, "Session expired"),
         ERROR(false, "Authentication error");
 
         private boolean authorized;
