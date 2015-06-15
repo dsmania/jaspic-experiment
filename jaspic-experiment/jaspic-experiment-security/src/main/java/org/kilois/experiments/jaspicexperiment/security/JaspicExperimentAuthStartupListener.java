@@ -25,7 +25,7 @@ public class JaspicExperimentAuthStartupListener implements ServletContextListen
     public void contextInitialized(ServletContextEvent event) {
         ServletContext context = event.getServletContext();
         Map<String, String> properties = null;
-        String hostName = getHostName(context);
+        String hostName = getHostName(context); // In Java EE 7 context.getHostName()
         if (hostName != null) {
             properties = new HashMap<String, String>();
             properties.put(JaspicExperimentAuthConfigProvider.HOST_NAME_KEY, hostName);
@@ -43,6 +43,7 @@ public class JaspicExperimentAuthStartupListener implements ServletContextListen
         context.setAttribute(CONTEXT_REGISTRATION_ID_KEY, configProvider.getRegistrationId());
     }
 
+    /* Not accurate. Might be configured with another name, these are default ones. */
     private static String getHostName(ServletContext context) {
         if (context == null) {
             return null;

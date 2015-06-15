@@ -30,9 +30,12 @@
     <dependency>
       <groupId>${project.parent.groupId}</groupId>
       <artifactId>${serviceModuleId}</artifactId>
-      <type>ejb</type>
-      <!--type>ejb-client</type-->
+      <type>ejb-client</type>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.parent.groupId}</groupId>
+      <artifactId>${securityModuleId}</artifactId>
     </dependency>
   </dependencies>
 

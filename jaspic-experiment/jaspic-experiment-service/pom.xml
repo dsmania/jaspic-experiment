@@ -14,8 +14,6 @@
 
   <properties>
     <project.rootdir>${project.basedir}/..</project.rootdir>
-
-    <authentication-service-plugin>es.sergas.reumat.service.authentication.MockUpAuthenticationServicePlugin</authentication-service-plugin>
   </properties>
 
   <dependencies>

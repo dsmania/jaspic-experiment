@@ -1,7 +1,6 @@
 package org.kilois.experiments.jaspicexperiment.security;
 
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.message.AuthException;
@@ -12,9 +11,7 @@ import lombok.Getter;
 
 public class JaspicExperimentServerAuthConfig implements ServerAuthConfig {
 
-    protected static final String DESCRIPTION = "ReumaT server auth* configuration";
-
-    private static final Logger LOGGER = Logger.getLogger(JaspicExperimentServerAuthConfig.class.getName());
+    protected static final String DESCRIPTION = "JASPIC Experiment server auth* configuration";
 
     @Getter
     private String messageLayer;
@@ -37,7 +34,6 @@ public class JaspicExperimentServerAuthConfig implements ServerAuthConfig {
 
     @Override
     public String getAuthContextID(MessageInfo messageInfo) {
-        LOGGER.info(DESCRIPTION + " provided auth* context id " + this.appContext + " for " + messageInfo + ".");
         return this.appContext;
     }
 
@@ -45,16 +41,12 @@ public class JaspicExperimentServerAuthConfig implements ServerAuthConfig {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public ServerAuthContext getAuthContext(String authContextId, Subject serviceSubject, Map properties)
             throws AuthException {
-        JaspicExperimentServerAuthContext authContext = new JaspicExperimentServerAuthContext(null, null, properties,
-                this.handler);
-        LOGGER.info(DESCRIPTION + " provided auth* context: " + authContext + ".");
-        return authContext;
+        return new JaspicExperimentServerAuthContext(null, null, properties, this.handler);
     }
 
     @Override
     public void refresh() {
         // Nothing to do here
-        LOGGER.info(DESCRIPTION + " refreshed.");
     }
 
 }

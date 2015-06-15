@@ -83,7 +83,8 @@
       <role-name>admin</role-name>
     </auth-constraint>
   </security-constraint>
-  
+
+  <!-- This is correct but overriden by the JASPIC module once installed. -->
   <login-config>
     <auth-method>FORM</auth-method>
     <form-login-config>

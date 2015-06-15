@@ -29,6 +29,11 @@
       <redirect />
     </navigation-case>
     <navigation-case>
+      <from-outcome>logout</from-outcome>
+      <to-view-id>/logout.xhtml</to-view-id>
+      <redirect />
+    </navigation-case>
+    <navigation-case>
       <from-outcome>*</from-outcome>
       <to-view-id>/error.xhtml</to-view-id>
       <redirect />

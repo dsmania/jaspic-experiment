@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html
+<ui:composition template="/templates/template.xhtml"
  xmlns="http://www.w3.org/1999/xhtml"
  xmlns:h="http://java.sun.com/jsf/html"
  xmlns:f="http://java.sun.com/jsf/core"
  xmlns:ui="http://java.sun.com/jsf/facelets">
 
-  <h:head>
-    <title><ui:insert name="title">#{messages.title}</ui:insert></title>
-    <meta charset="UTF-8" />
-  </h:head>
+  <ui:param name="pageTitle" value="#{messages.loginPage}" />
 
-  <h:body>
+  <ui:define name="content">
     <h:form id="authenticationForm" prependId="false" onsubmit="document.getElementById('authenticationForm').action='j_security_check';">
       <h:inputText id="j_username" name="j_username" placeholder="#{messages.userName}" autocomplete="off" /><br />
       <h:inputSecret id="j_password" name="j_password" placeholder="#{messages.password}" autocomplete="off" /><br />
       <h:commandButton type="submit" id="submitButton" value="#{messages.authenticate}" ajax="false" />
     </h:form>
-  </h:body>
+  </ui:define>
 
-</html>
+</ui:composition>

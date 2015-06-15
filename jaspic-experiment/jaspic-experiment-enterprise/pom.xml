@@ -24,10 +24,6 @@
     </dependency>
     <dependency>
       <groupId>${project.parent.groupId}</groupId>
-      <artifactId>${securityModuleId}</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${project.parent.groupId}</groupId>
       <artifactId>${webModuleId}</artifactId>
       <type>war</type>
     </dependency>
@@ -79,21 +75,18 @@
           <generateApplicationXml>false</generateApplicationXml>
           <skinnyWars>true</skinnyWars>
           <modules>
-            <jarModule>
-              <moduleId>${securityModuleId}</moduleId>
-              <groupId>${project.parent.groupId}</groupId>
-              <artifactId>${securityModuleId}</artifactId>
-            </jarModule>
             <ejbModule>
               <moduleId>${serviceModuleId}</moduleId>
               <groupId>${project.parent.groupId}</groupId>
               <artifactId>${serviceModuleId}</artifactId>
+              <bundleFileName>${serviceModuleId}.jar</bundleFileName>
             </ejbModule>
             <webModule>
               <moduleId>${webModuleId}</moduleId>
               <groupId>${project.parent.groupId}</groupId>
               <artifactId>${webModuleId}</artifactId>
               <contextRoot>${project.code}</contextRoot>
+              <bundleFileName>${webModuleId}.war</bundleFileName>
             </webModule>
           </modules>
           <archive>

@@ -3,10 +3,13 @@ package org.kilois.experiments.jaspicexperiment.security;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
-
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -21,25 +24,31 @@ import javax.security.auth.message.module.ServerAuthModule;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.kilois.experiments.jaspicexperiment.service.AuthenticationResult;
+import org.kilois.experiments.jaspicexperiment.service.AuthenticationService;
 
 public class JaspicExperimentServerAuthModule implements ServerAuthModule {
 
     protected static final String AUTH_TYPE_KEY = "javax.servlet.http.authType";
-    protected static final String FORM_ACTION = "/j_security_check";
-    protected static final String FORM_PASSWORD = "j_password";
-    protected static final String FORM_USERNAME = "j_username";
-    protected static final String FORM_TOKEN = "j_token";
+    protected static final String AUTH_RESULT_KEY = "org.kilois.experiments.jaspicexperiment.security.authResult";
+    protected static final String FORM_CHECK_ACTION = "/j_security_check";
+    protected static final String FORM_LOGOUT_ACTION = "/logout";
+    protected static final String FORM_PASSWORD_FIELD = "j_password";
+    protected static final String FORM_USERNAME_FIELD = "j_username";
     protected static final String IS_MANDATORY_KEY = "javax.security.auth.message.MessagePolicy.isMandatory";
     protected static final String REGISTER_SESSION_KEY = "javax.servlet.http.registerSession";
     protected static final String REGISTER_SESSION_GLASSFISH_KEY = "com.sun.web.RealmAdapter.register";
-    protected static final String SAVED_URL_KEY = "org.kilois.experiments.jaspicexperiment.security.savedurl";
-    protected static final String SAVED_AUTHENTICATOR_KEY
-            = "org.kilois.experiments.jaspicexperiment.security.authenticator";
+    protected static final String SAVED_URL_KEY = "org.kilois.experiments.jaspicexperiment.security.savedUrl";
     protected static final Class<?>[] SUPPORTED_MESSAGE_TYPES = new Class<?>[] {
         HttpServletRequest.class,
         HttpServletResponse.class };
 
-    private static final String NAME = "JaspicExperimentSAM";
+    private static final String AUTHENTICATION_SERVICE_NAME
+    		= "java:global/jaspic-experiment/jaspic-experiment-service/AuthenticationService";
+    private static AuthenticationService AUTHENTICATION_SERVICE;
+
+    /* Static cache is not the best option (it won't be shared across nodes) Better requesting again to the service. */
+    private static final Map<String, String[]> GROUPS_CACHE = new HashMap<String, String[]>();
 
     private static final Logger LOGGER = Logger.getLogger(JaspicExperimentServerAuthModule.class.getName());
 
@@ -59,7 +68,6 @@ public class JaspicExperimentServerAuthModule implements ServerAuthModule {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler,
             Map options) throws AuthException {
-        LOGGER.info("ServerAuthModule.initialize(MessagePolicy, MessagePolicy, CallbackHandler, Map)");
         this.requestPolicy = requestPolicy;
         this.responsePolicy = responsePolicy;
         this.handler = handler;
@@ -69,139 +77,141 @@ public class JaspicExperimentServerAuthModule implements ServerAuthModule {
     @Override
     @SuppressWarnings("rawtypes")
     public Class[] getSupportedMessageTypes() {
-        LOGGER.info("ServerAuthModule.getSupportedMessageTypes()");
         return Arrays.copyOf(SUPPORTED_MESSAGE_TYPES, SUPPORTED_MESSAGE_TYPES.length);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-    public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject)
-            throws AuthException {
-        LOGGER.info("ServerAuthModule.validateRequest(MessageInfo, Subject, Subject)");
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject)
+			throws AuthException {
+		HttpServletRequest request = (HttpServletRequest) messageInfo.getRequestMessage();
+		HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
+		HttpSession session = request.getSession();
 
-        HttpServletRequest request = (HttpServletRequest) messageInfo.getRequestMessage();
-        HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
-    	HttpSession session = request.getSession();
+		Principal userPrincipal = request.getUserPrincipal();
+		if (userPrincipal != null) {
+			try {
+				if (GROUPS_CACHE.containsKey(userPrincipal.getName())) {
+					this.handler.handle(new Callback[] {
+							new CallerPrincipalCallback(clientSubject, userPrincipal),
+							new GroupPrincipalCallback(clientSubject, GROUPS_CACHE.get(userPrincipal.getName())) });
+				} else {
+					this.handler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, userPrincipal) });
+				}
+				return AuthStatus.SUCCESS;
+			} catch (IOException | UnsupportedCallbackException e) {
+				throw (AuthException) new AuthException().initCause(e);
+			}
+		}
 
-        Principal userPrincipal = request.getUserPrincipal();
-        LOGGER.info("userPrincipal = " + userPrincipal);
-        if (userPrincipal != null) {
-            try {
-                this.handler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, userPrincipal) });
-                return AuthStatus.SUCCESS;
-            } catch (IOException | UnsupportedCallbackException e) {
-                throw (AuthException) new AuthException().initCause(e);
-            }
-        }
+		String userName = request.getParameter(FORM_USERNAME_FIELD);
+		String password = request.getParameter(FORM_PASSWORD_FIELD);
+		String servletPath = request.getServletPath();
+		if ((servletPath.startsWith(FORM_CHECK_ACTION)) && (userName != null) && (password != null)) {
+			AuthenticationResult result;
+			try {
+				result = getAuthenticationService().authenticate(userName, password.toCharArray());
+			} catch (NamingException e) {
+				throw (AuthException) new AuthException().initCause(e);
+			}
+			session.setAttribute(AUTH_RESULT_KEY, result);
+			if (result.isAuthorized()) {
+				try {
+					response.sendRedirect((String) session.getAttribute(SAVED_URL_KEY));
+				} catch (IOException e) {
+					throw (AuthException) new AuthException().initCause(e);
+				}
+				return AuthStatus.SEND_CONTINUE;
+			} else {
+				try {
+					response.sendRedirect(getBaseUrl(request) + "/error.jsf"); // FIXME Use web.xml value
+				} catch (IOException e) {
+					throw (AuthException) new AuthException().initCause(e);
+				}
+				return AuthStatus.SEND_FAILURE;
+			}
+		} else {
+			AuthenticationResult result = (AuthenticationResult) session.getAttribute(AUTH_RESULT_KEY);
+			String savedUrl = (String) session.getAttribute(SAVED_URL_KEY);
+			if ((result != null) && (result.isAuthorized()) && (savedUrl != null)
+					&& (savedUrl.equals(getFullRequestUrl(request)))) {
+				try {
+					Set<String> groupSet = result.getGroups();
+					String[] groups = (groupSet != null) ? groupSet.toArray(new String[groupSet.size()]) : null;
+					if ((groups != null) && (groups.length > 0)) {
+						userName = result.getUserName();
+						this.handler.handle(new Callback[] {
+								new CallerPrincipalCallback(clientSubject, userName),
+								new GroupPrincipalCallback(clientSubject, groups) });
+						GROUPS_CACHE.put(userName, groups);
+					} else {
+						this.handler.handle(new Callback[] {
+								new CallerPrincipalCallback(clientSubject, result.getUserName()) });
+					}
+				} catch (IOException | UnsupportedCallbackException e) {
+					throw (AuthException) new AuthException().initCause(e);
+				}
+				Map messageInfoMap = messageInfo.getMap();
+				messageInfoMap.put(REGISTER_SESSION_KEY, Boolean.TRUE.toString());
+				messageInfoMap.put(REGISTER_SESSION_GLASSFISH_KEY, Boolean.TRUE.toString());
+				session.removeAttribute(SAVED_URL_KEY);
+				session.removeAttribute(AUTH_RESULT_KEY);
 
-        String userName = request.getParameter(FORM_USERNAME);
-        LOGGER.info("userName = " + userName);
-        String password = request.getParameter(FORM_PASSWORD);
-        LOGGER.info("password = " + password);
-        String servletPath = request.getServletPath();
-        LOGGER.info("servletPath = " + servletPath);
-        if ((servletPath.startsWith(FORM_ACTION)) && (userName != null) && (password != null)) {
-            JaspicExperimentAuthenticator authenticator = new JaspicExperimentAuthenticator();
-            if (authenticator.authenticate(userName, password)) {
-            	session.setAttribute(SAVED_AUTHENTICATOR_KEY, authenticator);
-                try {
-                    response.sendRedirect(getBaseUrl(request) + "/token"); // FIXME
-                } catch (IOException e) {
-                    throw (AuthException) new AuthException().initCause(e);
-                }
-                return AuthStatus.SEND_CONTINUE;
-            } else {
-                try {
-                    response.sendRedirect(getBaseUrl(request) + "/error.jsf"); // TODO
-                } catch (IOException e) {
-                    throw (AuthException) new AuthException().initCause(e);
-                }
-            }
-        } else if ((servletPath.startsWith(FORM_ACTION)) && (request.getParameter(FORM_TOKEN) != null)) {
-            JaspicExperimentAuthenticator authenticator = (JaspicExperimentAuthenticator) session.getAttribute(
-            		SAVED_AUTHENTICATOR_KEY);
-            if (authenticator == null) {
-                try {
-                    response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT);
-                } catch (IOException e) {
-                    // Ignored
-                }
-                return AuthStatus.SEND_FAILURE;
-            }
+				return AuthStatus.SUCCESS;
+			}
+		}
 
-            if (authenticator.authenticate((String) request.getParameter(FORM_TOKEN))) {
-                String savedUrl = (String) session.getAttribute(SAVED_URL_KEY);
-                if (savedUrl == null) {
-                    savedUrl = getBaseUrl(request);
-                    session.setAttribute(SAVED_URL_KEY, savedUrl);
-                }
+		if (Boolean.valueOf((String) messageInfo.getMap().get(IS_MANDATORY_KEY))) {
+			session.setAttribute(SAVED_URL_KEY, getFullRequestUrl(request));
+			try {
+				response.sendRedirect(getBaseUrl(request) + "/login.jsf"); // FIXME Use web.xml value
+			} catch (IOException e) {
+				throw (AuthException) new AuthException().initCause(e);
+			}
+			return AuthStatus.SEND_CONTINUE;
+		}
 
-                try {
-                    response.sendRedirect(savedUrl);
-                } catch (IOException e) {
-                    throw (AuthException) new AuthException().initCause(e);
-                }
-                return AuthStatus.SEND_CONTINUE;
-            } else {
-                try {
-                    response.sendRedirect(getBaseUrl(request) + "/error.jsf"); // TODO
-                } catch (IOException e) {
-                    throw (AuthException) new AuthException().initCause(e);
-                }
-            }
-        } else {
-            JaspicExperimentAuthenticator authenticator = (JaspicExperimentAuthenticator) session.getAttribute(
-            		SAVED_AUTHENTICATOR_KEY);
-            String savedUrl = (String) session.getAttribute(SAVED_URL_KEY);
-            if ((savedUrl != null) && (authenticator != null) && (authenticator.isAuthenticated())
-            		&& (savedUrl.equals(getFullRequestUrl(request)))) {
-                try {
-                    this.handler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject,
-                            authenticator.getUserName()) });
-
-                    List<String> groups = authenticator.getGroups();
-                    if ((groups != null) && (!groups.isEmpty())) {
-                        this.handler.handle(new Callback[] { new GroupPrincipalCallback(clientSubject,
-                        		groups.toArray(new String[groups.size()])) });
-                    }
-                } catch (IOException | UnsupportedCallbackException e) {
-                    throw (AuthException) new AuthException().initCause(e);
-                }
-                Map messageInfoMap = messageInfo.getMap();
-                messageInfoMap.put(REGISTER_SESSION_KEY, Boolean.TRUE.toString());
-                messageInfoMap.put(REGISTER_SESSION_GLASSFISH_KEY, Boolean.TRUE.toString());
-                session.removeAttribute(SAVED_URL_KEY);
-                session.removeAttribute(SAVED_AUTHENTICATOR_KEY);
-
-                return AuthStatus.SUCCESS;
-            }
-        }
-
-        if (Boolean.valueOf((String) messageInfo.getMap().get(IS_MANDATORY_KEY))) {
-        	session.setAttribute(SAVED_URL_KEY, getFullRequestUrl(request));
-            try {
-                response.sendRedirect(getBaseUrl(request) + "/login.jsf"); // TODO
-            } catch (IOException e) {
-                throw (AuthException) new AuthException().initCause(e);
-            }
-            return AuthStatus.SEND_CONTINUE;
-        }
-
-        return AuthStatus.SUCCESS;
-    }
+		return AuthStatus.SUCCESS;
+	}
 
     @Override
     public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
-        LOGGER.info("ServerAuthModule.secureResponse(MessageInfo, Subject)");
-        return AuthStatus.SEND_SUCCESS;
+		HttpServletRequest request = (HttpServletRequest) messageInfo.getRequestMessage();
+		HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
+		HttpSession session = request.getSession();
+
+		if (request.getServletPath().startsWith(FORM_LOGOUT_ACTION)) {
+			try {
+				response.sendRedirect(getBaseUrl(request));
+			} catch (IOException e) {
+				throw (AuthException) new AuthException().initCause(e);
+			}
+			session.invalidate();
+			return AuthStatus.SEND_CONTINUE;
+		}
+ 
+		return AuthStatus.SEND_SUCCESS;
     }
 
     @Override
     public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
-        LOGGER.info("ServerAuthModule.cleanSubject(MessageInfo, Subject)");
+		((HttpServletRequest) messageInfo.getRequestMessage()).getSession().invalidate();;
         if (subject != null) {
             subject.getPrincipals().clear();
         }
+    }
+
+    protected static AuthenticationService getAuthenticationService() throws NamingException {
+    	if (AUTHENTICATION_SERVICE == null) {
+    		Properties properties = new Properties();
+    		properties.put(InitialContext.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
+    		properties.put(InitialContext.URL_PKG_PREFIXES, "com.sun.enterprise.naming");
+    		properties.put(InitialContext.STATE_FACTORIES, "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl");
+
+    		AUTHENTICATION_SERVICE = (AuthenticationService) (new InitialContext(properties)).lookup(AUTHENTICATION_SERVICE_NAME);
+    	}
+
+    	return AUTHENTICATION_SERVICE;
     }
 
     public static String getBaseUrl(HttpServletRequest request) {
@@ -210,10 +220,11 @@ public class JaspicExperimentServerAuthModule implements ServerAuthModule {
     }
 
     public static String getFullRequestUrl(HttpServletRequest request) {
-        StringBuffer queryURL = request.getRequestURL();
+        StringBuffer queryUrl = request.getRequestURL();
         String queryString = request.getQueryString();
         
-        return ((queryString == null || queryString.isEmpty()) ? queryURL : queryURL.append("?" + queryString)).toString();
+        return (((queryString != null) && (!queryString.isEmpty())) ? queryUrl.append("?").append(queryString)
+        		: queryUrl).toString();
     }
 
 }

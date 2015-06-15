@@ -6,11 +6,11 @@
   <display-name>${project.title}</display-name>
 
   <module id="${serviceModuleId}">
-    <ejb>${serviceModuleId}-${project.parent.version}.jar</ejb>
+    <ejb>${serviceModuleId}.jar</ejb>
   </module>
   <module id="${webModuleId}">
     <web>
-      <web-uri>${webModuleId}-${project.parent.version}.war</web-uri>
+      <web-uri>${webModuleId}.war</web-uri>
       <context-root>${project.code}</context-root>
     </web>
   </module>

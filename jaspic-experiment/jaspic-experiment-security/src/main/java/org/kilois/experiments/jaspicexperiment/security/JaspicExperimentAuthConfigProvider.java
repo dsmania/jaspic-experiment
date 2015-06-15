@@ -9,6 +9,7 @@ import javax.security.auth.message.config.AuthConfigFactory;
 import javax.security.auth.message.config.AuthConfigProvider;
 import javax.security.auth.message.config.ClientAuthConfig;
 import javax.security.auth.message.config.ServerAuthConfig;
+
 import lombok.Getter;
 
 public class JaspicExperimentAuthConfigProvider implements AuthConfigProvider {
@@ -37,8 +38,11 @@ public class JaspicExperimentAuthConfigProvider implements AuthConfigProvider {
         if (factory != null) {
             String hostName = this.properties.get(HOST_NAME_KEY);
             String contextPath = this.properties.get(CONTEXT_PATH_KEY);
+            if ((contextPath != null) && (contextPath.startsWith("/"))) {
+            	contextPath = contextPath.substring(1);
+            }
             this.appContext = ((hostName != null) && (contextPath != null)) ? hostName + " " + contextPath : null;
-            this.registrationId = factory.registerConfigProvider(this, LAYER, this.appContext, DESCRIPTION);
+            this.registrationId = factory.registerConfigProvider(this, LAYER, null, DESCRIPTION);
             LOGGER.warning(DESCRIPTION + " registered for context \"" + this.appContext + "\" in " + LAYER
             		+ " layer with ID \"" + this.registrationId + "\".");
         }
@@ -49,7 +53,6 @@ public class JaspicExperimentAuthConfigProvider implements AuthConfigProvider {
             throws AuthException {
         validateParameters(layer, appContext);
 
-        LOGGER.warning(DESCRIPTION + " provides no client auth* configuration.");
         return null;
     }
 
@@ -60,7 +63,6 @@ public class JaspicExperimentAuthConfigProvider implements AuthConfigProvider {
 
         JaspicExperimentServerAuthConfig serverAuthConfig = new JaspicExperimentServerAuthConfig(layer, appContext,
                 (handler != null) ? handler : createDefaultCallbackHandler());
-        LOGGER.warning(DESCRIPTION + " provided server auth* configuration: " + serverAuthConfig + ".");
         return serverAuthConfig;
     }
 
@@ -81,7 +83,6 @@ public class JaspicExperimentAuthConfigProvider implements AuthConfigProvider {
     @Override
     public void refresh() {
         // Nothing to do here
-        LOGGER.warning(DESCRIPTION + " refreshed.");
     }
 
     protected void validateParameters(String layer, String appContext) throws AuthException {

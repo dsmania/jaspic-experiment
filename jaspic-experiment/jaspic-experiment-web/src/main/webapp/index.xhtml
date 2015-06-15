@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html
+<ui:composition template="/templates/template.xhtml"
  xmlns="http://www.w3.org/1999/xhtml"
  xmlns:h="http://java.sun.com/jsf/html"
  xmlns:f="http://java.sun.com/jsf/core"
  xmlns:ui="http://java.sun.com/jsf/facelets">
 
-  <h:head>
-    <title><ui:insert name="title">#{messages.title}</ui:insert></title>
-    <meta charset="UTF-8" />
-  </h:head>
+  <ui:param name="pageTitle" value="#{messages.homePage}" />
 
-  <h:body>
-    <h:outputText value="#{messages.homePage}" /><hr />
+  <ui:define name="content">
     <h:link value="#{messages.userPage}" outcome="user" /><br />
     <h:link value="#{messages.adminPage}" outcome="admin" />
-  </h:body>
+  </ui:define>
 
-</html>
+</ui:composition>

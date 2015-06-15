@@ -40,10 +40,10 @@
   </developers>
 
   <modules>
-    <module>jaspic-experiment-security</module>
     <module>jaspic-experiment-service</module>
-    <module>jaspic-experiment-enterprise</module>
+    <module>jaspic-experiment-security</module>
     <module>jaspic-experiment-web</module>
+    <module>jaspic-experiment-enterprise</module>
   </modules>
 
   <scm>
@@ -69,12 +69,10 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <serviceModuleId>${project.code}-service</serviceModuleId>
-    <serviceClientModuleId>${serviceModuleId}-client</serviceClientModuleId>
     <securityModuleId>${project.code}-security</securityModuleId>
     <webModuleId>${project.code}-web</webModuleId>
     <enterpriseModuleId>${project.code}-enterprise</enterpriseModuleId>
 
-    <commonscodec.version>1.10</commonscodec.version>
     <ejb.version>3.1</ejb.version>
     <el.version>2.2</el.version>
     <jaspic.version>1.0</jaspic.version>
@@ -94,6 +92,7 @@
     <maven-jarsigner-plugin.version>1.4</maven-jarsigner-plugin.version>
     <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
     <maven-resources-plugin.version>2.7</maven-resources-plugin.version>
+    <maven-shade-plugin.version>2.4</maven-shade-plugin.version>
     <maven-source-plugin.version>2.4</maven-source-plugin.version>
     <maven-surefire-plugin.version>2.18.1</maven-surefire-plugin.version>
     <maven-war-plugin.version>2.6</maven-war-plugin.version>
@@ -111,12 +110,6 @@
         <artifactId>lombok</artifactId>
         <version>${lombok.version}</version>
         <scope>provided</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>${commonscodec.version}</version>
       </dependency>
 
       <dependency>
@@ -199,6 +192,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>${maven-jar-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${maven-shade-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

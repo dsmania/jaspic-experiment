@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN" "http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
-<glassfish-web-app httpservlet-security-provider="JaspicExperimentSAM"> <!-- httpservlet-security-provider="__311_HttpServletserver /jaspic-experiment"-->
+<glassfish-web-app> <!-- httpservlet-security-provider attribute defines the provider. This is overriden by JASPIC programmatic installation -->
 
   <context-root>/${project.code}</context-root>
   <class-loader delegate="true" />
@@ -15,11 +15,11 @@
 
   <security-role-mapping>
     <role-name>user</role-name>
-    <group-name>user</group-name>
+    <group-name>users</group-name>
   </security-role-mapping>
   <security-role-mapping>
     <role-name>admin</role-name>
-    <group-name>admin</group-name>
+    <group-name>admins</group-name>
   </security-role-mapping>
   
 </glassfish-web-app>
