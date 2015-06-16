@@ -7,3 +7,5 @@ It's currently provided a test case in embedded GlassFish that can be easily lau
 ```
 $ mvn -P glassfish verify
 ```
+
+When running, it can be accessed at http://localhost:8080/jaspic-experiment/.
